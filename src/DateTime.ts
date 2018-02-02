@@ -50,9 +50,6 @@ export function isTime(str: string): boolean {
     return hour <= 23 && minute <= 59 && second <= 59;
 }
 
-const DATE_TIME_SEPARATOR = /t|\s/i;
 export function isDateTime(str: string): boolean {
-    // http://tools.ietf.org/html/rfc3339#section-5.6
-    const dateTime = str.split(DATE_TIME_SEPARATOR);
-    return dateTime.length === 2 && isDate(dateTime[0]) && isTime(dateTime[1]);
+    return !isNaN(Date.parse(str));
 }
