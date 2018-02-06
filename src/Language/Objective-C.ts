@@ -59,7 +59,12 @@ export default class ObjectiveCTargetLanguage extends TargetLanguage {
     private readonly _extraCommentsOption = new BooleanOption("extra-comments", "Extra comments", false);
 
     private readonly _dateLocale = new StringOption("date-locale", "Date locale", "LOCALE", "en_US_POSIX");
-    private readonly _dateFormat = new StringOption("date-format", "Date format", "FORMAT", "yyyy-MM-dd'T'HH:mm:ssZ");
+    private readonly _dateFormat = new StringOption(
+        "date-format",
+        "Date format",
+        "FORMAT",
+        "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
+    );
 
     constructor() {
         super("Objective-C", ["objc", "objective-c", "objectivec"], "m");
@@ -141,11 +146,8 @@ function propertyNameStyle(original: string, isBool: boolean = false): string {
 const DATE_FUNCTION = { FROM_STRING: "QTDateFromString", TO_STRING: "QTStringFromDate" };
 
 const keywords = [
-    /*
-    "_Bool",
-    "_Complex",
-    "_Imaginary",
-    */
+    DATE_FUNCTION.FROM_STRING,
+    DATE_FUNCTION.TO_STRING,
     "asm",
     "atomic",
     "auto",
