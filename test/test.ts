@@ -8,35 +8,28 @@ import { exec, execAsync, Sample } from "./utils";
 import { Fixture, allFixtures } from "./fixtures";
 
 const exit = require("exit");
-
-//////////////////////////////////////
-// Constants
-/////////////////////////////////////
-
 const CPUs = parseInt(process.env.CPUs || "0", 10) || os.cpus().length;
 
 function getChangedFiles(base: string, commit: string): string[] {
-    let diff = exec(`git diff --name-only ${base}..${commit}`).stdout;
+    let diff = exec(`git diff --name-only origin/${base}..${commit}`).stdout;
     return diff.trim().split("\n");
 }
 
 function buildKiteAffectedFixtures(changedFiles: string[] | undefined = undefined): Fixture[] {
     if (changedFiles === undefined) {
         const { BUILDKITE_PULL_REQUEST_BASE_BRANCH: base, BUILDKITE_COMMIT: commit } = process.env;
-
-        console.log("buildkite branch state", { base, commit });
-
         return commit === undefined
             ? allFixtures
             : buildKiteAffectedFixtures(getChangedFiles(base || "master", commit));
     }
+
+    console.log({ changedFiles });
 
     // We can ignore changes in Markdown files
     changedFiles = _.reject(changedFiles, file => _.endsWith(file, ".md"));
 
     // All fixtures are dirty if any changed file is not included as a sourceFile of some fixture.
     const fileDependencies = _.flatMap(allFixtures, f => f.language.sourceFiles || []);
-
     const allFixturesDirty = _.some(changedFiles, f => !_.includes(fileDependencies, f));
 
     if (allFixturesDirty) return allFixtures;
@@ -52,11 +45,6 @@ function buildKiteAffectedFixtures(changedFiles: string[] | undefined = undefine
     return dirtyFixtures;
 }
 
-function kite() {
-    const fixtures = buildKiteAffectedFixtures();
-    console.log("affected fixtures", fixtures.map(f => f.name));
-}
-
 //////////////////////////////////////
 // Test driver
 /////////////////////////////////////
@@ -69,6 +57,8 @@ async function main(sources: string[]) {
     if (fixturesFromCmdline) {
         const fixtureNames = fixturesFromCmdline.split(",");
         fixtures = _.filter(fixtures, fixture => _.some(fixtureNames, name => fixture.runForName(name)));
+    } else {
+        fixtures = buildKiteAffectedFixtures();
     }
     // Get an array of all { sample, fixtureName } objects we'll run.
     // We can't just put the fixture in there because these WorkItems
