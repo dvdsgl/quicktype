@@ -19,13 +19,27 @@ function affectedFixtures(changedFiles: string[]): Fixture[] {
   // We can ignore changes in Markdown files
   changedFiles = _.reject(changedFiles, file => _.endsWith(file, ".md"));
 
-  return allFixtures.filter(
+  // All fixtures are dirty if any changed file is not included as a sourceFile
+  // of some fixture.
+  const allFixturesDirty = _.some(changedFiles, file =>
+    _.some(allFixtures, fixture =>
+      _.includes(fixture.language.sourceFiles || [], file)
+    )
+  );
+
+  if (allFixturesDirty) return allFixtures;
+
+  const dirtyFixtures = allFixtures.filter(
     fixture =>
       // Fixtures that don't specify dependencies are always dirty
       fixture.language.sourceFiles === undefined ||
-      // Fixtures for which .language.sourceFiles is a superset of changedFiles
-      changedFiles.every(file => _.includes(fixture.language.sourceFiles, file))
+      // Fixtures which have a changed file are dirty
+      _.some(changedFiles, file =>
+        _.includes(fixture.language.sourceFiles, file)
+      )
   );
+
+  return dirtyFixtures;
 }
 
 function kite() {
