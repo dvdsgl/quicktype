@@ -119,10 +119,8 @@ function testCLI() {
     qt(`https://blockchain.info/latestblock`);
 }
 
-// // skip 2 `node` args
-// main(process.argv.slice(2)).catch(reason => {
-//   console.error(reason);
-//   process.exit(1);
-// });
-
-kite();
+// skip 2 `node` args
+main(process.argv.slice(2)).catch(reason => {
+    console.error(reason);
+    process.exit(1);
+});
