@@ -23,8 +23,6 @@ function buildKiteAffectedFixtures(changedFiles: string[] | undefined = undefine
             : buildKiteAffectedFixtures(getChangedFiles(base || "master", commit));
     }
 
-    console.log({ changedFiles });
-
     // We can ignore changes in Markdown files
     changedFiles = _.reject(changedFiles, file => _.endsWith(file, ".md"));
 
