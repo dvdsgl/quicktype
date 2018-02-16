@@ -23,8 +23,6 @@ function buildKiteAffectedFixtures(changedFiles: string[] | undefined = undefine
             : buildKiteAffectedFixtures(getChangedFiles(base || "master", commit));
     }
 
-    console.log({ changedFiles });
-
     // We can ignore changes in Markdown files
     changedFiles = _.reject(changedFiles, file => _.endsWith(file, ".md"));
 
@@ -41,6 +39,11 @@ function buildKiteAffectedFixtures(changedFiles: string[] | undefined = undefine
             // Fixtures which have a changed file are dirty
             _.some(changedFiles, f => _.includes(fixture.language.sourceFiles, f))
     );
+
+    if (allFixtures.length !== dirtyFixtures.length) {
+        console.error(`* Changed files: ${changedFiles.join(", ")}`);
+        console.error(`* Running a subset of fixtures: ${dirtyFixtures.map(f => f.name).join(", ")}`);
+    }
 
     return dirtyFixtures;
 }
