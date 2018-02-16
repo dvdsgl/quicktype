@@ -37,9 +37,7 @@ function affectedFixtures(changedFiles: string[]): Fixture[] {
       // Fixtures that don't specify dependencies are always dirty
       fixture.language.sourceFiles === undefined ||
       // Fixtures which have a changed file are dirty
-      _.some(changedFiles, file =>
-        _.includes(fixture.language.sourceFiles, file)
-      )
+      _.some(changedFiles, f => _.includes(fixture.language.sourceFiles, f))
   );
 
   return dirtyFixtures;
