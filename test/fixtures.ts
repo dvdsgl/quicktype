@@ -115,6 +115,10 @@ export abstract class Fixture {
 }
 
 abstract class LanguageFixture extends Fixture {
+  constructor(language: languages.Language) {
+    super(language);
+  }
+
   async setup() {
     const setupCommand = this.language.setupCommand;
     if (!setupCommand) {
