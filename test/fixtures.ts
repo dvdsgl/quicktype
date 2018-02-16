@@ -341,7 +341,8 @@ class JSONSchemaJSONFixture extends JSONFixture {
       skipMiscJSON: false,
       skipSchema: [],
       rendererOptions: {},
-      quickTestRendererOptions: []
+      quickTestRendererOptions: [],
+      sourceFiles: language.sourceFiles
     };
     super(schemaLanguage);
     this.runLanguage = language;
