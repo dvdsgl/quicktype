@@ -11,7 +11,7 @@ const exit = require("exit");
 const CPUs = parseInt(process.env.CPUs || "0", 10) || os.cpus().length;
 
 function getChangedFiles(base: string, commit: string): string[] {
-    let diff = exec(`git diff --name-only origin/${base}..${commit}`).stdout;
+    let diff = exec(`git fetch -v origin ${base} && git diff --name-only origin/${base}..${commit}`).stdout;
     return diff.trim().split("\n");
 }
 
