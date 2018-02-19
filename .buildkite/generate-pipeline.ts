@@ -53,8 +53,9 @@ function generatePipelines() {
   const fixtures = affectedFixtures();
   if (allFixtures.length !== fixtures.length) {
     const args = fixtures.map(f => f.name).join(",");
-    const label = fixtures.map(f => f.name).join(" ");
-    console.log(`steps: [ { command: "FIXTURE=${args} .buildkite/build-pr.sh", label: "${label}" } ]`);
+    // const label = fixtures.map(f => f.name).join(" ");
+    console.log(`steps:`);
+    console.log(`  - command: "FIXTURE=${args} .buildkite/build-pr.sh"`);
   } else {
     exec(`cat .buildkite/pipeline.yml`);
   }
