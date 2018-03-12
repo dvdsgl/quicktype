@@ -526,6 +526,10 @@ class NewtonsoftCSharpRenderer extends CSharpRenderer {
                 ["public static ", csType, " FromJson(string json)"],
                 ["JsonConvert.DeserializeObject<", csType, ">(json, ", this.namespaceName, ".Converter.Settings)"]
             );
+            this.emitExpressionMember(
+                ["public string ToJson()"],
+                ["JsonConvert.SerializeObject(this, ", this.namespaceName, ".Converter.Settings)"]
+            );
         });
     }
 
@@ -695,16 +699,35 @@ class NewtonsoftCSharpRenderer extends CSharpRenderer {
         });
     }
 
-    private emitSerializeClass(): void {
+    private emitToJsonExtensionsForTopLevelUnnameds(): void {
+        let needsTopLevelExtensions = false;
+
+        function needsExtension(t: Type) {
+            return ["class", "union"].indexOf(t.kind) === -1;
+        }
+
+        this.forEachTopLevel(
+            "none",
+            t => (needsTopLevelExtensions = needsTopLevelExtensions || needsExtension(t))
+        );
+
+        if (!needsTopLevelExtensions) {
+            return;
+        }
+
         // FIXME: Make Serialize a Named
         this.emitType(undefined, AccessModifier.Public, "static class", "Serialize", () => {
-            this.topLevels.forEach((t: Type, _: string) => {
-                // FIXME: Make ToJson a Named
-                this.emitExpressionMember(
-                    ["public static string ToJson(this ", this.csType(t), " self)"],
-                    ["JsonConvert.SerializeObject(self, ", this.namespaceName, ".Converter.Settings)"]
-                );
-            });
+            this.forEachTopLevel(
+                "none",
+                topLevel => {
+                    // FIXME: Make ToJson a Named
+                    this.emitExpressionMember(
+                        ["public static string ToJson(this ", this.csType(topLevel), " self)"],
+                        ["JsonConvert.SerializeObject(self, ", this.namespaceName, ".Converter.Settings)"]
+                    );
+                },
+                needsExtension
+            );
         });
     }
 
@@ -782,7 +805,7 @@ class NewtonsoftCSharpRenderer extends CSharpRenderer {
             this.forEachEnum("leading-and-interposing", (e, n) => this.emitEnumExtension(e, n));
             this.forEachUnion("leading-and-interposing", (u, n) => this.emitUnionJSONPartial(u, n));
             this.ensureBlankLine();
-            this.emitSerializeClass();
+            this.emitToJsonExtensionsForTopLevelUnnameds();
         }
         if (this.needHelpers || (this.needAttributes && (this.haveNamedUnions || this.haveEnums))) {
             this.ensureBlankLine();
