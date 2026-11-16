@@ -58,6 +58,25 @@ export default class GoTargetLanguage extends TargetLanguage {
     }
 }
 
+// Emit a Go struct tag of the form `json:"<jsonName>"` for a property.
+//
+// The tag is normally written as a raw string literal (delimited by backticks)
+// so that the double quotes inside it don't need escaping. A JSON name is
+// attacker-controlled, however, and a raw string literal cannot contain a
+// backtick: if the name contains one, it would terminate the literal early and
+// let the rest of the name be interpreted as arbitrary top-level Go code
+// (CWE-94, code injection). When the name contains a backtick we fall back to
+// an interpreted (double-quoted) string literal, which can safely represent any
+// character via `stringEscape` (it escapes `"`, `\`, newlines and
+// non-printables; a backtick is harmless inside double quotes).
+function goStructTag(jsonName: string): Sourcelike {
+    const escaped = stringEscape(jsonName);
+    if (jsonName.indexOf("`") < 0) {
+        return ['`json:"', escaped, '"`'];
+    }
+    return ['"json:\\"', escaped, '\\""'];
+}
+
 const namingFunction = funPrefixNamer("namer", goNameStyle);
 
 const legalizeName = legalizeCharacters(isLetterOrUnderscoreOrDigit);
@@ -217,7 +236,7 @@ class GoRenderer extends ConvenienceRenderer {
         this.forEachClassProperty(c, "none", (name, jsonName, p) => {
             const goType = this.goType(p.type, true);
             const comment = singleDescriptionComment(this.descriptionForClassProperty(c, jsonName));
-            columns.push([[name, " "], [goType, " "], ['`json:"', stringEscape(jsonName), '"`'], comment]);
+            columns.push([[name, " "], [goType, " "], goStructTag(jsonName), comment]);
         });
         this.emitDescription(this.descriptionForType(c));
         this.emitStruct(className, columns);
